@@ -1,65 +1,33 @@
 #!/bin/bash
 
-### Problem Block ###
-
-##Problem Template##
-#problem1 () {
-#  #Problem decription
-#  echo "Issue 1" 
-#
-#}
-#
-
-problem1 () {
-  #Problem decription
-  echo "Issue 1" 
-
-}
-
-problem2 () {
-  #Problem decription
-  echo "Issue 2" 
-
-}
-
-problem3 () {
-  #Problem decription
-  echo "Issue 3" 
-
-}
-
-problem4 () {
-  #Problem decription
-  echo "Issue 4" 
-
-}
-
-problem5 () {
-  #Problem decription
-  echo "Issue 5" 
-
-}
-
-### End Problem Block ###
-
-MAX_PROBLEM=5
+MAX_PROBLEM=$(ls -1 ./scripts/problems | wc -l)
 
 #Check for AWS creds
-#if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
-#  if [ -s aws_creds.env ]; then
-#    export $(egrep -v "(^#.*|^$)" aws_creds.env | xargs)
-#  fi  
-#  if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
-#    echo "Please export your AWS credentials or save them in aws_creds.env"
-#    exit 1
-#  fi
-#fi
+if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
+  if [ -s aws_creds.env ]; then
+    export $(egrep -v "(^#.*|^$)" aws_creds.env | xargs)
+  fi  
+  if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
+    echo "Please export your AWS credentials or save them in aws_creds.env"
+    exit 1
+  fi
+fi
 
 #Check for terraform or openTOFU
 TFCMD=$(command -v tofu || command -v terraform)
 if [ -z $TFCMD ]; then
   echo "Please ensure that OpenTofu or Terraform is installed and in your path"
-  exit
+  exit 1
+fi
+
+#Check for Helm and kubectl
+if ! command -v kubectl; then
+  echo "Please ensure that kubectl is installed and in your path"
+  exit 1
+fi
+if ! command -v kubectl; then
+  echo "Please ensure that Helm is installed and in your path"
+  exit 1
 fi
 
 USAGE=$(cat <<EOF
@@ -97,16 +65,25 @@ fi
 
 echo "Building lab environment" 
 cd ./tf/aws
-$TFCMD apply 
+$TFCMD init
+$TFCMD apply --auto-approve 
+
+cd ../..
 
 case $problem in
   A)
     echo "Using all problems"
+    echo '' > ./check.sh
     for i in $(seq 1 $MAX_PROBLEM); do
-      problem$i
+      ./scripts/problems/$i.sh
+      cat ./scripts/checks/$i.sh >> ./check.sh
     done
     ;;
   [1-$MAX_PROBLEM])
-    problem$problem
+    ./scripts/problems/$problem.sh
+    cat ./scripts/checks/$problem.sh > ./check.sh
     ;;
 esac
+
+echo "When you believe that you have solved the problem, run ./check.sh to confirm."
+echo "When you are done with the lab environment, move to ./tf/aws and run $TFCMD delete to cleanup the resources." 
