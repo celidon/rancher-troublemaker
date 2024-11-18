@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MainDir=$(pwd)
+
 MAX_PROBLEM=$(ls -1 ./scripts/problems | wc -l)
 
 #Check for AWS creds
@@ -64,26 +66,31 @@ elif ( [ $problem != "A" ] && [[ ! "$problem" =~ ^[0-9]+$ ]] ) || ( [[ "$problem
 fi
 
 echo "Building lab environment" 
-cd ./tf/aws
-$TFCMD init
-$TFCMD apply --auto-approve 
+cd $MainDir/tf/aws
+$TFCMD init >/dev/null
+$TFCMD apply --auto-approve > /dev/null
+$TFCMD output > $MainDir/connection_information
 
-cd ../..
+cd $MainDir
+echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_information
+echo "SSH Key: ./id_rsa" >> $MainDir/connection_information
+cp $MainDir/tf/aws/id_rsa $MainDir/
 
 case $problem in
   A)
     echo "Using all problems"
-    echo '' > ./check.sh
+    echo '' > $MainDir/check.sh
     for i in $(seq 1 $MAX_PROBLEM); do
-      ./scripts/problems/$i.sh
-      cat ./scripts/checks/$i.sh >> ./check.sh
+      MainDir=$MainDir $MainDir/scripts/problems/$i.sh
+      cat $MainDir/scripts/checks/$i.sh >> ./check.sh
     done
     ;;
   [1-$MAX_PROBLEM])
-    ./scripts/problems/$problem.sh
-    cat ./scripts/checks/$problem.sh > ./check.sh
+    MainDir=$MainDir $MainDir/scripts/problems/$problem.sh
+    cat $MainDir/scripts/checks/$problem.sh > ./check.sh
     ;;
 esac
 
-echo "When you believe that you have solved the problem, run ./check.sh to confirm."
-echo "When you are done with the lab environment, move to ./tf/aws and run $TFCMD delete to cleanup the resources." 
+echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_information"
+echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm."
+echo "When you are done with the lab environment, move to $MainDir/tf/aws and run $TFCMD delete to cleanup the resources." 

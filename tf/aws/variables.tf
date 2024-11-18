@@ -1,16 +1,16 @@
 # Variables for AWS infrastructure module
 
-# Required
-variable "aws_access_key" {
-  type        = string
-  description = "AWS access key used to create infrastructure"
-}
-
-# Required
-variable "aws_secret_key" {
-  type        = string
-  description = "AWS secret key used to create AWS infrastructure"
-}
+## Required
+#variable "aws_access_key" {
+#  type        = string
+#  description = "AWS access key used to create infrastructure"
+#}
+#
+## Required
+#variable "aws_secret_key" {
+#  type        = string
+#  description = "AWS secret key used to create AWS infrastructure"
+#}
 
 variable "aws_session_token" {
   type        = string
@@ -45,13 +45,13 @@ variable "instance_type" {
 variable "rancher_kubernetes_version" {
   type        = string
   description = "Kubernetes version to use for Rancher server cluster"
-  default     = "v1.31.2+k3s1"
+  default     = "v1.30.6+k3s1"
 }
 
 variable "workload_kubernetes_version" {
   type        = string
   description = "Kubernetes version to use for managed workload cluster"
-  default     = "v1.31.2+rke2r1"
+  default     = "v1.30.6+rke2r1"
 }
 
 variable "cert_manager_version" {
@@ -76,6 +76,7 @@ variable "rancher_helm_repository" {
 variable "rancher_server_admin_password" {
   type        = string
   description = "Admin password to use for Rancher server bootstrap, min. 12 characters"
+  default     = "mwCHPvFr3xeT"
 }
 
 # Local variables used to reduce repetition

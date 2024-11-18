@@ -1,4 +1,5 @@
 #!/bin/bash
 
+SNAPSHOT=
 
-echo Solution 2
+
