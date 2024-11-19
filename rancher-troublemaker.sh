@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MainDir=$(pwd)
-grep -rl 'MainDir=' $MainDir/scripts  | xargs sed -i "s/MainDir=.*$/MainDir=$MainDir/"
+grep -rl 'MainDir=' $MainDir/scripts | xargs sed -i "s|MainDir=.*$|MainDir=$MainDir|"
 
 MAX_PROBLEM=$(ls -1 $MainDir/scripts/problems | wc -l)
 
@@ -84,11 +84,13 @@ case $problem in
     for i in $(seq 1 $MAX_PROBLEM); do
       $MainDir/scripts/problems/$i.sh
       cat $MainDir/scripts/checks/$i.sh >> ./check.sh
+      echo
     done
     ;;
   [1-$MAX_PROBLEM])
     $MainDir/scripts/problems/$problem.sh
     cat $MainDir/scripts/checks/$problem.sh > ./check.sh
+    echo
     ;;
 esac
 

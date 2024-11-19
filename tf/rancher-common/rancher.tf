@@ -6,9 +6,6 @@ resource "rancher2_bootstrap" "admin" {
     helm_release.rancher_server
   ]
 
-  timeouts {
-    create = "5m"
-  }
   provider = rancher2.bootstrap
 
   password  = var.admin_password

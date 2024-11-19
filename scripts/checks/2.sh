@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 MainDir=asdf
 
-SNAPSHOT=on-demand-ip-10-0-0-238-1732045346
+SNAPSHOT=
 
 IP=$(grep workload_node_ip connection_info | cut -d'"' -f2)
 SSH="ssh ec2-user@$IP -i ./id_rsa -o StrictHostKeyChecking=no -C sudo"

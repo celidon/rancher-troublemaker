@@ -11,7 +11,7 @@ sleep 5
 
 $SSH rke2 etcd-snapshot save --etcd-snapshot-dir /home/ec2-user &> /dev/null
 snapshot=$($SSH ls on-demand*)
-sed -i "s/SNAPSHOT=.*$/SNAPSHOT=$snapshot/" $MainDir/scripts/checks/2.sh > /dev/null
+sed -i "s|SNAPSHOT=.*$|SNAPSHOT=$snapshot|" $MainDir/scripts/checks/2.sh 
 $SSH rke2-uninstall.sh &> /dev/null
 
 echo "RKE2 isn't working on the downstream cluster. Please get the app back online. The node cannot be replaced. There is a snpshot on the node."
