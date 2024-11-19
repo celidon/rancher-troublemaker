@@ -1,8 +1,9 @@
 #!/bin/bash
 
 MainDir=$(pwd)
+grep -rl 'MainDir=' $MainDir/scripts  | xargs sed -i "s/MainDir=.*$/MainDir=$MainDir/"
 
-MAX_PROBLEM=$(ls -1 ./scripts/problems | wc -l)
+MAX_PROBLEM=$(ls -1 $MainDir/scripts/problems | wc -l)
 
 #Check for AWS creds
 if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
@@ -23,11 +24,11 @@ if [ -z $TFCMD ]; then
 fi
 
 #Check for Helm and kubectl
-if ! command -v kubectl; then
+if ! command -v kubectl &>/dev/null; then
   echo "Please ensure that kubectl is installed and in your path"
   exit 1
 fi
-if ! command -v kubectl; then
+if ! command -v helm &> /dev/null; then
   echo "Please ensure that Helm is installed and in your path"
   exit 1
 fi
@@ -69,11 +70,11 @@ echo "Building lab environment"
 cd $MainDir/tf/aws
 $TFCMD init >/dev/null
 $TFCMD apply --auto-approve > /dev/null
-$TFCMD output > $MainDir/connection_information
+$TFCMD output > $MainDir/connection_info
 
 cd $MainDir
-echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_information
-echo "SSH Key: ./id_rsa" >> $MainDir/connection_information
+echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_info
+echo "SSH Key: ./id_rsa" >> $MainDir/connection_info
 cp $MainDir/tf/aws/id_rsa $MainDir/
 
 case $problem in
@@ -81,12 +82,12 @@ case $problem in
     echo "Using all problems"
     echo '' > $MainDir/check.sh
     for i in $(seq 1 $MAX_PROBLEM); do
-      MainDir=$MainDir $MainDir/scripts/problems/$i.sh
+      $MainDir/scripts/problems/$i.sh
       cat $MainDir/scripts/checks/$i.sh >> ./check.sh
     done
     ;;
   [1-$MAX_PROBLEM])
-    MainDir=$MainDir $MainDir/scripts/problems/$problem.sh
+    $MainDir/scripts/problems/$problem.sh
     cat $MainDir/scripts/checks/$problem.sh > ./check.sh
     ;;
 esac

@@ -2,3 +2,4 @@
 
 
 echo Solution 4
+MainDir=asdf

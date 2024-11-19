@@ -3,3 +3,4 @@
 
 
 echo Issue 5
+MainDir=asdf
