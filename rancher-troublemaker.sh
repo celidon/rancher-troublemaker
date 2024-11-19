@@ -66,7 +66,7 @@ elif ( [ $problem != "A" ] && [[ ! "$problem" =~ ^[0-9]+$ ]] ) || ( [[ "$problem
     exit 1
 fi
 
-echo "Building lab environment" 
+echo "Building lab environment. This might take some time"
 cd $MainDir/tf/aws
 $TFCMD init >/dev/null
 $TFCMD apply --auto-approve > /dev/null
