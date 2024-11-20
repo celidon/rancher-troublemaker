@@ -24,6 +24,7 @@ if [ $USERcurrent == $USER ]; then
   echo -e "$GREEN [PASS]$NC Same user in use"
 else
   echo -e "$RED [FAIL]$NC User changed"
+  echo -e "$RED [WARN]$NC You might experience issues when you try to destroy the lab"
   exit 1
 fi
 

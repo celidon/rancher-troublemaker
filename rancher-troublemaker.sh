@@ -66,15 +66,17 @@ elif ( [ $problem != "A" ] && [[ ! "$problem" =~ ^[0-9]+$ ]] ) || ( [[ "$problem
     exit 1
 fi
 
-echo "Building lab environment. This might take some time"
+echo "Building lab environment. This might take some time."
 cd $MainDir/tf/aws
 $TFCMD init >/dev/null
-$TFCMD apply --auto-approve > /dev/null
+until $TFCMD apply --auto-approve &> /dev/null; do
+  echo "Still building environment..."
+done
 $TFCMD output > $MainDir/connection_info
 
 cd $MainDir
 echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_info
-echo "SSH Key: ./id_rsa" >> $MainDir/connection_info
+echo "SSH Key: $MainDir/id_rsa" >> $MainDir/connection_info
 cp $MainDir/tf/aws/id_rsa $MainDir/
 
 case $problem in
@@ -96,4 +98,4 @@ esac
 
 echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_information"
 echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm."
-echo "When you are done with the lab environment, move to $MainDir/tf/aws and run $TFCMD delete to cleanup the resources." 
+echo "When you are done with the lab environment, move to $MainDir/tf/aws and run $TFCMD delete to cleanup the resources or manually remove them from AWS" 
