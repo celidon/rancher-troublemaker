@@ -13,6 +13,13 @@ if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
   fi
 fi
 
+#Check for terraform or opentofu
+TFCMD=$(command -v tofu || command -v terraform)
+if [ -z $TFCMD ]; then
+  echo "Please ensure that OpenTofu or Terraform is installed and in your path"
+  exit 1
+fi
+
 COUNT=0
 echo "Cleaning up resources"
 
@@ -23,7 +30,7 @@ rm -rf $MainDir/id_rsa
 cd $MainDir/tf/aws
 until $TFCMD destroy --auto-approve &> /dev/null; do
   echo "Still cleaning environment..."
-  COUNT=$COUNT+1
+  COUNT=$(( $COUNT + 1 ))
   if [ $COUNT -eq 10 ]; then
     cd $MainDir
     rm -rf $MainDir/tf/aws/terraform.tfstate
