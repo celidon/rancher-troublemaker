@@ -85,7 +85,7 @@ case $problem in
     echo '' > $MainDir/check.sh
     for i in $(seq 1 $MAX_PROBLEM); do
       $MainDir/scripts/problems/$i.sh
-      cat $MainDir/scripts/checks/$i.sh >> ./check.sh
+      cat $MainDir/scripts/checks/$i.sh >> $MainDir/check.sh
       echo
     done
     ;;
@@ -96,6 +96,8 @@ case $problem in
     ;;
 esac
 
-echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_information"
+echo -e "$GREENALL CHECKS PASSED $NC" >> $MainDir/check.sh
+
+echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_info"
 echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm."
 echo "When you are done with the lab environment, move to $MainDir/tf/aws and run $TFCMD delete to cleanup the resources or manually remove them from AWS" 
