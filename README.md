@@ -1,6 +1,6 @@
 # Troublemaker for Rancher
 
-Create an intentionally broken Rancher environment in AWS to practive troubleshootingcommon issues.
+Create an intentionally broken Rancher environment in AWS to practive troubleshooting common issues.
 
 This tool creates a single node Rancher cluster on k3s and a downstream custom RKE2 cluster.
 
