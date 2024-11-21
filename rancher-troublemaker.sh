@@ -7,7 +7,7 @@ MAX_PROBLEM=$(ls -1 $MainDir/scripts/problems | wc -l)
 
 #Check for AWS creds
 if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
-  if [ -s aws_creds.env ]; then
+  if [ -s $MainDir/aws_creds.env ]; then
     export $(egrep -v "(^#.*|^$)" aws_creds.env | xargs)
   fi  
   if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
@@ -16,7 +16,7 @@ if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
   fi
 fi
 
-#Check for terraform or openTOFU
+#Check for terraform or opentofu
 TFCMD=$(command -v tofu || command -v terraform)
 if [ -z $TFCMD ]; then
   echo "Please ensure that OpenTofu or Terraform is installed and in your path"
@@ -30,6 +30,12 @@ if ! command -v kubectl &>/dev/null; then
 fi
 if ! command -v helm &> /dev/null; then
   echo "Please ensure that Helm is installed and in your path"
+  exit 1
+fi
+
+#Check for openssl
+if ! command -v openssl &>/dev/null; then
+  echo "Please ensure that openssl is installed and in your path"
   exit 1
 fi
 
@@ -96,8 +102,9 @@ case $problem in
     ;;
 esac
 
-echo -e "$GREENALL CHECKS PASSED $NC" >> $MainDir/check.sh
+echo -e "$GREEN ALL CHECKS PASSED $NC" >> $MainDir/check.sh
 
 echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_info"
-echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm."
-echo "When you are done with the lab environment, move to $MainDir/tf/aws and run $TFCMD delete to cleanup the resources or manually remove them from AWS" 
+echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm"
+echo 'Each problem has multiple checks. You will see a green "ALL CHECKS PASSED" message once all the checks for your current scenario succeed.'
+echo "When you are done with the lab environment, run $MainDir/cleanup.sh to delete the lab resources" 
