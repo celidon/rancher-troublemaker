@@ -30,6 +30,6 @@ helm --kubeconfig $RKC upgrade rancher rancher-prime/rancher -n cattle-system -f
 
 CA_CHECKSUM=$(sha256sum cacert.pem | cut -d" " -f1)
 sed -i "s|CA_CHECKSUM=.*$|CA_CHECKSUM=$CA_CHECKSUM|" $MainDir/scripts/checks/5.sh
-rm values.yaml tls* *.pem
+rm values.yaml tls* *.pem *.srl
 
 echo -e "Something went wrong while moving to a certificate with a private CA.\nThe Rancher pod isn't starting after step 3 from https://ranchermanager.docs.rancher.com/getting-started/installation-and-upgrade/resources/update-rancher-certificate\nOnce that is fixed, downstream needs to be connected."

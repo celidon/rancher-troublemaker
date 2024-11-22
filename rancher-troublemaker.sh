@@ -79,7 +79,7 @@ $TFCMD init >/dev/null
 until $TFCMD apply --auto-approve &> /dev/null; do
   echo "Still building environment..."
   COUNT=$(( $COUNT + 1 ))
-  if [ $COUNT -eq 10 ]; then
+  if [ $COUNT -eq 5 ]; then
     cd $MainDir
     echo "Build failed. Please double check your credentials and try again"
     exit 1
@@ -92,7 +92,22 @@ echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_info
 echo "SSH Key: $MainDir/id_rsa" >> $MainDir/connection_info
 cp $MainDir/tf/aws/id_rsa $MainDir/
 
+echo "Giving downstream time to come up"
+sleep 30
+COUNT=0
+until [ "kubectl --kubeconfig=$MainDir/tf/aws/kube_config_workload.yaml get nodes &>/dev/null" ]; do
+  echo "Still waiting on downstream"
+  COUNT=$(( $COUNT + 1 ))
+  if [ $COUNT -eq 10 ]; then
+    cd $MainDir
+    echo "[WARN] Downstream is inaccessible via original Rancher Kubeconfig."
+    break
+  fi
+  sleep 30
+done
+
 echo "Lab deployed. Making trouble, causing problems, and breaking things"
+sleep 10
 
 case $problem in
   A)
@@ -101,7 +116,7 @@ case $problem in
     for i in $(seq 1 $MAX_PROBLEM); do
       $MainDir/scripts/problems/$i.sh
       cat $MainDir/scripts/checks/$i.sh >> $MainDir/check.sh
-      echo
+      sleep 10
     done
     ;;
   [1-$MAX_PROBLEM])
@@ -111,7 +126,7 @@ case $problem in
     ;;
 esac
 
-echo -e "$GREEN ALL CHECKS PASSED $NC" >> $MainDir/check.sh
+echo 'echo -e "$GREEN ALL CHECKS PASSED $NC"' >> $MainDir/check.sh
 
 echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_info"
 echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm"

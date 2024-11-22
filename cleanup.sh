@@ -28,10 +28,11 @@ rm -rf $MainDir/connection_info
 rm -rf $MainDir/id_rsa
 
 cd $MainDir/tf/aws
+$TFCMD state remove module.rancher_common &> /dev/null
 until $TFCMD destroy --auto-approve &> /dev/null; do
   echo "Still cleaning environment..."
   COUNT=$(( $COUNT + 1 ))
-  if [ $COUNT -eq 10 ]; then
+  if [ $COUNT -eq 5 ]; then
     cd $MainDir
     rm -rf $MainDir/tf/aws/terraform.tfstate
     echo "Cleanup has failed. Please manually remove the resources from AWS"
