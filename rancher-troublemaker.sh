@@ -72,11 +72,18 @@ elif ( [ $problem != "A" ] && [[ ! "$problem" =~ ^[0-9]+$ ]] ) || ( [[ "$problem
     exit 1
 fi
 
+COUNT=0
 echo "Building lab environment. This might take some time."
 cd $MainDir/tf/aws
 $TFCMD init >/dev/null
 until $TFCMD apply --auto-approve &> /dev/null; do
   echo "Still building environment..."
+  COUNT=$(( $COUNT + 1 ))
+  if [ $COUNT -eq 10 ]; then
+    cd $MainDir
+    echo "Build failed. Please double check your credentials and try again"
+    exit 1
+  fi
 done
 $TFCMD output > $MainDir/connection_info
 
@@ -84,6 +91,8 @@ cd $MainDir
 echo "Initial Rancher Password: mwCHPvFr3xeT" >> $MainDir/connection_info
 echo "SSH Key: $MainDir/id_rsa" >> $MainDir/connection_info
 cp $MainDir/tf/aws/id_rsa $MainDir/
+
+echo "Lab deployed. Making trouble, causing problems, and breaking things"
 
 case $problem in
   A)
