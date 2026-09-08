@@ -93,9 +93,9 @@ echo "SSH Key: $MainDir/id_rsa" >> $MainDir/connection_info
 cp $MainDir/tf/aws/id_rsa $MainDir/
 
 echo "Giving downstream time to come up"
-sleep 30
+sleep 60
 COUNT=0
-until [ "kubectl --kubeconfig=$MainDir/tf/aws/kube_config_workload.yaml get nodes &>/dev/null" ]; do
+until kubectl --kubeconfig=$MainDir/tf/aws/kube_config_workload.yaml get nodes &>/dev/null; do
   echo "Still waiting on downstream"
   COUNT=$(( $COUNT + 1 ))
   if [ $COUNT -eq 10 ]; then
@@ -103,7 +103,7 @@ until [ "kubectl --kubeconfig=$MainDir/tf/aws/kube_config_workload.yaml get node
     echo "[WARN] Downstream is inaccessible via original Rancher Kubeconfig."
     break
   fi
-  sleep 30
+  sleep 60
 done
 
 echo "Lab deployed. Making trouble, causing problems, and breaking things"

@@ -39,7 +39,7 @@ variable "prefix" {
 variable "instance_type" {
   type        = string
   description = "Instance type used for all EC2 instances"
-  default     = "t3a.large"
+  default     = "t3a.xlarge"
 }
 
 variable "rancher_kubernetes_version" {

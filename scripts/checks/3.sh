@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MainDir=asdf
+MainDir=/home/tony/rancher-troublemaker
 IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
 SSH="ssh ec2-user@$IP -i $MainDir/id_rsa -o StrictHostKeyChecking=no -C sudo"
 RED='\033[0;31m'
