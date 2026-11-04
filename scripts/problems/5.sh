@@ -26,7 +26,7 @@ privateCA: true
 EOF
 helm repo add rancher-prime https://charts.rancher.com/server-charts/prime &>/dev/null
 helm repo update &>/dev/null
-helm --kubeconfig $RKC upgrade rancher rancher-prime/rancher -n cattle-system -f values.yaml --version 2.9.3 &>/dev/null
+helm --kubeconfig $RKC upgrade rancher rancher-prime/rancher -n cattle-system -f values.yaml --version 2.14.6 &>/dev/null
 
 CA_CHECKSUM=$(sha256sum cacert.pem | cut -d" " -f1)
 sed -i "s|CA_CHECKSUM=.*$|CA_CHECKSUM=$CA_CHECKSUM|" $MainDir/scripts/checks/5.sh

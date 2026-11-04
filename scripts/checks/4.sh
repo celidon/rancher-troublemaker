@@ -32,7 +32,7 @@ fi
 
 VER=$(helm get metadata rancher -n cattle-system 2>/dev/null | grep ^VERSION | cut -d" " -f2)
 
-if [ $VER != "2.9.3" ]; then
+if [ $VER != "2.14.6" ]; then
   echo -e "$RED[FAIL]$NC Rancher version change"
   exit 1
 else
