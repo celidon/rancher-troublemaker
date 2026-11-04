@@ -1,30 +1,15 @@
 #!/bin/bash
 
-MainDir=asdf
-RKC=$MainDir/tf/aws/kube_config_server.yaml
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+MainDir=asdf
 
-PW=
-USER=
-
-PWcurrent=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep password | cut -d: -f2 | tr -d " ")
-USERcurrent=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep " name:" | cut -d: -f2 | tr -d " ")
-
-if [ $PWcurrent != $PW ]; then
-  echo -e "$GREEN [PASS]$NC Password changed"
+IP=$(grep workload_node_ip connection_info | cut -d'"' -f2)
+if curl -sILk app.$IP.nip.io > /dev/null; then
+  echo -e "$GREEN [PASS]$NC App is running"
 else
-  echo -e "$RED [FAIL]$NC Password not changed"
-  echo -e "$RED Remaining check skipped $NC"
-  exit 1
-fi
-
-if [ $USERcurrent == $USER ]; then
-  echo -e "$GREEN [PASS]$NC Same user in use"
-else
-  echo -e "$RED [FAIL]$NC User changed"
-  echo -e "$RED [WARN]$NC You might experience issues when you try to destroy the lab"
+  echo -e "$RED [FAIL]$NC App is$RED NOT$NC running"
   exit 1
 fi
 

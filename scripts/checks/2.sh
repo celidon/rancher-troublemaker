@@ -1,42 +1,30 @@
 #!/bin/bash
 
+MainDir=asdf
+RKC=$MainDir/tf/aws/kube_config_server.yaml
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
-MainDir=asdf
 
-SNAPSHOT=
+PW=
+USER=
 
-IP=$(grep workload_node_ip connection_info | cut -d'"' -f2)
-SSH="ssh ec2-user@$IP -i ./id_rsa -o StrictHostKeyChecking=no -C sudo"
+PWcurrent=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep password | cut -d: -f2 | tr -d " ")
+USERcurrent=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep " name:" | cut -d: -f2 | tr -d " ")
 
-if $SSH which rke2 &>/dev/null; then
-  echo -e "$GREEN [PASS]$NC RKE2 is installed"
+if [ $PWcurrent != $PW ]; then
+  echo -e "$GREEN [PASS]$NC Password changed"
 else
-  echo -e "$RED [FAIL]$NC RKE2 is$RED NOT$NC installed"
-  echo -e "$RED Remaining checks skipped $NC"
-  exit 1
-fi
-
-if $SSH systemctl is-active --quiet rke2-server; then
-  echo -e "$GREEN [PASS]$NC RKE2 is running"
-else
-  echo -e "$RED [FAIL]$NC RKE2 is$RED NOT$NC running"
-  echo -e "$RED Remaining checks skipped $NC"
-  exit 1
-fi
-
-if $SSH ls /var/lib/rancher/rke2/server/db/snapshots | grep $SNAPSHOT >/dev/null; then
-  echo -e "$GREEN [PASS]$NC RKE2 Snapshot is present in /var/lib/rancher/rke2/server/db/snapshots"
-else
-  echo -e "$RED [FAIL]$NC RKE2 Snapshot is$RED MISSING$NC"
+  echo -e "$RED [FAIL]$NC Password not changed"
   echo -e "$RED Remaining check skipped $NC"
   exit 1
 fi
 
-if curl -sILk $IP:30081 > /dev/null; then
-  echo -e "$GREEN [PASS]$NC App is running"
+if [ $USERcurrent == $USER ]; then
+  echo -e "$GREEN [PASS]$NC Same user in use"
 else
-  echo -e "$RED [FAIL]$NC App is$RED NOT$NC running"
+  echo -e "$RED [FAIL]$NC User changed"
+  echo -e "$RED [WARN]$NC You might experience issues when you try to destroy the lab"
   exit 1
 fi
+

@@ -1,19 +1,13 @@
 #!/bin/bash
-#RKE2 Downstream uninstalled
+#Can't login to Rancher
 
 MainDir=asdf
-IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
-SSH="ssh ec2-user@$IP -i $MainDir/id_rsa -o StrictHostKeyChecking=no -C sudo"
+RKC=$MainDir/tf/aws/kube_config_server.yaml
 
-until [ "$SSH /var/lib/rancher/rke2/bin/kubectl --kubeconfig=/etc/rancher/rke2/rke2.yaml apply -f https://raw.githubusercontent.com/skynet86/hello-world-k8s/refs/heads/master/hello-world.yaml &> /dev/null" ]; do
-  sleep 10
-done
+kubectl --kubeconfig $RKC exec -n cattle-system $(kubectl --kubeconfig $RKC -n cattle-system get pods -l app=rancher --no-headers | head -1 | awk '{ print $1 }') -it -- reset-password > /dev/null
+PW=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep password | cut -d: -f2 | tr -d " ")
+USER=$(kubectl --kubeconfig $RKC get users -oyaml | grep -B10 "username: admin" | grep " name:" | cut -d: -f2 | tr -d " ")
+sed -i "s|PW=.*$|PW=$PW|" $MainDir/scripts/checks/1.sh
+sed -i "s|USER=.*$|USER=$USER|" $MainDir/scripts/checks/1.sh
 
-sleep 5
-
-$SSH /usr/local/bin/rke2 etcd-snapshot save --etcd-snapshot-dir /home/ec2-user &> /dev/null
-snapshot=$($SSH ls on-demand*)
-sed -i "s|SNAPSHOT=.*$|SNAPSHOT=$snapshot|" $MainDir/scripts/checks/2.sh 
-$SSH /usr/local/bin/rke2-uninstall.sh &> /dev/null
-
-echo "RKE2 isn't working on the downstream cluster. Please get the app back online. The node cannot be replaced. There is a snapshot on the node."
+echo "Ooops! The Rancher login password has been lost. Please reset it"

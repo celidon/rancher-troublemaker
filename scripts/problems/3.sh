@@ -1,23 +1,19 @@
 #!/bin/bash
-#Disk pressure
+#RKE2 Downstream uninstalled
 
 MainDir=asdf
-WKC=$MainDir/tf/aws/kube_config_workload.yaml
 IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
 SSH="ssh ec2-user@$IP -i $MainDir/id_rsa -o StrictHostKeyChecking=no -C sudo"
 
-$SSH touch /tmp/test
-$SSH 'cat > test.sh' <<< 'while true; do if [ $(df --output=pcent / | tail -1 | cut -d% -f1) -lt 95 ]; then if [ -f /tmp/test ]; then rm /tmp/test; fallocate -l $(( $( stat -f --printf="%a * %s" / ) / 100 * 95 )) /tmp/test; else exit; fi; sleep 10; fi; done'
-$SSH bash test.sh &
-$SSH mkdir .kube
-$SSH cp /etc/rancher/rke2/rke2.yaml ./.kube/config
-$SSH chown -R ec2-user. .kube
-$SSH 'cat > .bashrc' <<< 'export PATH=$PATH:/var/lib/rancher/rke2/bin'
+until [ "$SSH /var/lib/rancher/rke2/bin/kubectl --kubeconfig=/etc/rancher/rke2/rke2.yaml apply -f https://raw.githubusercontent.com/skynet86/hello-world-k8s/refs/heads/master/hello-world.yaml &> /dev/null" ]; do
+  sleep 10
+done
 
-echo "Downstream cluster went offline. Please investigate why and bring it back online."
+sleep 5
 
-read -p "Would you like a hint? (y/n) " hint
+$SSH /usr/local/bin/rke2 etcd-snapshot save --etcd-snapshot-dir /home/ec2-user &> /dev/null
+snapshot=$($SSH ls on-demand*)
+sed -i "s|SNAPSHOT=.*$|SNAPSHOT=$snapshot|" $MainDir/scripts/checks/2.sh 
+$SSH /usr/local/bin/rke2-uninstall.sh &> /dev/null
 
-if [ $hint == y ] || [ $hint == Y ]; then
-    echo "You need to relieve the pressure"
-fi
+echo "RKE2 isn't working on the downstream cluster. Please get the app back online. The node cannot be replaced. There is a snapshot on the node."

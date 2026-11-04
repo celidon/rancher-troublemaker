@@ -1,29 +1,23 @@
 #!/bin/bash
-#High Requests
+#Disk pressure
 
 MainDir=asdf
-RKC=$MainDir/tf/aws/kube_config_server.yaml
+WKC=$MainDir/tf/aws/kube_config_workload.yaml
+IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
+SSH="ssh ec2-user@$IP -i $MainDir/id_rsa -o StrictHostKeyChecking=no -C sudo"
 
-helm --kubeconfig $RKC get values -n cattle-system rancher 2>/dev/null > values.yaml
-cat >> values.yaml << EOF
-resources:
-  requests:
-    cpu: 11111
-    memory: 11111G
-EOF
+$SSH touch /tmp/test
+$SSH 'cat > test.sh' <<< 'while true; do if [ $(df --output=pcent / | tail -1 | cut -d% -f1) -lt 95 ]; then if [ -f /tmp/test ]; then rm /tmp/test; fallocate -l $(( $( stat -f --printf="%a * %s" / ) / 100 * 95 )) /tmp/test; else exit; fi; sleep 10; fi; done'
+$SSH bash test.sh &
+$SSH mkdir .kube
+$SSH cp /etc/rancher/rke2/rke2.yaml ./.kube/config
+$SSH chown -R ec2-user. .kube
+$SSH 'cat > .bashrc' <<< 'export PATH=$PATH:/var/lib/rancher/rke2/bin'
 
-helm repo add rancher-prime https://charts.rancher.com/server-charts/prime &>/dev/null
-helm repo update &>/dev/null
-helm --kubeconfig $RKC upgrade rancher rancher-prime/rancher -n cattle-system -f values.yaml --version 2.14.6 &>/dev/null
-
-kubectl --kubeconfig $RKC patch -n cattle-system deployments.apps rancher --type=json -p='[{"op": "replace", "path": "/spec/strategy/type", "value":"Recreate"}, {"op": "remove", "path": "/spec/strategy/rollingUpdate"}]' &>/dev/null
-
-rm values.yaml
-
-echo "Rancher isn't running. Please get it back online"
+echo "Downstream cluster went offline. Please investigate why and bring it back online."
 
 read -p "Would you like a hint? (y/n) " hint
 
 if [ $hint == y ] || [ $hint == Y ]; then
-    echo "I think I messed up editing my Helm values. I was trying to add resource requests of 1 CPU and 1G Memory."
+    echo "You need to relieve the pressure"
 fi

@@ -1,23 +1,42 @@
 #!/bin/bash
 
-MainDir=asdf
-IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
-SSH="ssh ec2-user@$IP -i $MainDir/id_rsa -o StrictHostKeyChecking=no -C sudo"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+MainDir=asdf
 
-if [ $( $SSH echo $(( $(stat -f / --printf="%a * 100 / %b") )) ) -gt 15 ]; then
-  echo -e "$GREEN [PASS]$NC Disk usage is under Disk Pressure High Threshold"
+SNAPSHOT=
+
+IP=$(grep workload_node_ip connection_info | cut -d'"' -f2)
+SSH="ssh ec2-user@$IP -i ./id_rsa -o StrictHostKeyChecking=no -C sudo"
+
+if $SSH which rke2 &>/dev/null; then
+  echo -e "$GREEN [PASS]$NC RKE2 is installed"
 else
-  echo -e "$RED [FAIL]$NC Disk usage still too high"
+  echo -e "$RED [FAIL]$NC RKE2 is$RED NOT$NC installed"
+  echo -e "$RED Remaining checks skipped $NC"
+  exit 1
+fi
+
+if $SSH systemctl is-active --quiet rke2-server; then
+  echo -e "$GREEN [PASS]$NC RKE2 is running"
+else
+  echo -e "$RED [FAIL]$NC RKE2 is$RED NOT$NC running"
+  echo -e "$RED Remaining checks skipped $NC"
+  exit 1
+fi
+
+if $SSH ls /var/lib/rancher/rke2/server/db/snapshots | grep $SNAPSHOT >/dev/null; then
+  echo -e "$GREEN [PASS]$NC RKE2 Snapshot is present in /var/lib/rancher/rke2/server/db/snapshots"
+else
+  echo -e "$RED [FAIL]$NC RKE2 Snapshot is$RED MISSING$NC"
   echo -e "$RED Remaining check skipped $NC"
   exit 1
 fi
 
-if $SSH stat /tmp/test &>/dev/null; then
-  echo -e "$RED [FAIL]$NC Problem file still present"
-  exit 1
+if curl -sILk $IP:30081 > /dev/null; then
+  echo -e "$GREEN [PASS]$NC App is running"
 else
-  echo -e "$GREEN [PASS]$NC Large file removed"
+  echo -e "$RED [FAIL]$NC App is$RED NOT$NC running"
+  exit 1
 fi
