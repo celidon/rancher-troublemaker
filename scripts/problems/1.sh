@@ -127,4 +127,4 @@ data:
     </html>
 EOF
 
-echo "Our Web App at app.$ip.nip.io is failing to serve content. Please get it fixed."
+echo "Our Web App at app.$IP.nip.io is failing to serve content. Please get it fixed."

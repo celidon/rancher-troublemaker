@@ -127,6 +127,7 @@ case $problem in
 esac
 
 echo 'echo -e "$GREEN ALL CHECKS PASSED $NC"' >> $MainDir/check.sh
+chmod +x $MainDir/check.sh
 
 echo "Connection information (URLs, IPs, Keys) is stored in $MainDir/connection_info"
 echo "When you believe that you have solved the problem, run $MainDir/check.sh to confirm"
