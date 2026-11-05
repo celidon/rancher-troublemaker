@@ -5,8 +5,8 @@ MainDir=asdf
 IP=$(grep workload_node_ip $MainDir/connection_info | cut -d'"' -f2)
 WKC=$MainDir/tf/aws/kube_config_workload.yaml
 
-kubectl --kubeconfig $WKC taint nodes --all appworks=false:NoSchedule
-kubectl --kubeconfig $WKC apply -f - <<EOF
+kubectl --kubeconfig $WKC taint nodes --all appworks=false:NoSchedule &>/dev/null
+kubectl --kubeconfig $WKC apply -f - <<EOF &>/dev/null
 apiVersion: apps/v1
 kind: Deployment
 metadata:
